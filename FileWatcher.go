@@ -1,6 +1,7 @@
 package main
 
 import (
+	"LauncherGuard/utils"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,25 +12,31 @@ import (
 
 type FileWatcher struct{}
 
+var fileUtils = utils.FileUtils{}
+
 func (f *FileWatcher) run(gameDir string, cmd *exec.Cmd) {
 	watcher, _ := fsnotify.NewWatcher()
 
 	modsPath := filepath.Join(gameDir, "mods")
 	librariesPath := filepath.Join(gameDir, "libraries")
 
-	filepath.Walk(modsPath, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			watcher.Add(path)
-		}
-		return nil
-	})
+	if fileUtils.Exist(modsPath) {
+		filepath.Walk(modsPath, func(path string, info os.FileInfo, err error) error {
+			if info.IsDir() {
+				watcher.Add(path)
+			}
+			return nil
+		})
+	}
 
-	filepath.Walk(librariesPath, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			watcher.Add(path)
-		}
-		return nil
-	})
+	if fileUtils.Exist(librariesPath) {
+		filepath.Walk(librariesPath, func(path string, info os.FileInfo, err error) error {
+			if info.IsDir() {
+				watcher.Add(path)
+			}
+			return nil
+		})
+	}
 
 	go func() {
 		for {
